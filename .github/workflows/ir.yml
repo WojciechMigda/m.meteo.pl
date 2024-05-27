@@ -26,7 +26,11 @@ jobs:
 
     - name: Collect 60h weather forecast image
       run: |
-        curl -s "https://old.meteo.pl/um/php/meteorogram_list.php?ntype=0u&fdate=2024052712&row=466&col=232&lang=pl&cname=Krak%F3w" \
-          | grep -ioP 'var fcstdate = "\K[0-9]+' > fcstdate.txt
-        wget "https://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&fdate=$(cat fcstdate.txt)&row=466&col=232&lang=pl" -O krakow/60
+        curl -s "https://old.meteo.pl//um/ramka_um_city_pl.php" > ramka.html
+        cat ramka.html | grep -oP '(?<=var UM_SYYYY=")[0-9]+' | tr -d '\n' > fcstdate.txt
+        cat ramka.html | grep -oP '(?<=var UM_SMM=")[0-9]+' | tr -d '\n' >> fcstdate.txt
+        cat ramka.html | grep -oP '(?<=var UM_SDD=")[0-9]+' | tr -d '\n' >> fcstdate.txt
+        cat ramka.html | grep -oP '(?<=var UM_SST=")[0-9]+' | tr -d '\n' >> fcstdate.txt
+        rm ramka.html
+        wget "https://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&fdate=$(cat fcstdate.txt)&row=466&col=232&lang=pl" -O krakow/60.png
         ./commit.sh
