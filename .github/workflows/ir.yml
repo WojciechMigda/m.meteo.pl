@@ -1,0 +1,32 @@
+# Use the hash sign to prefix a comment
+# +---------------- minute (0 - 59)
+# |  +------------- hour (0 - 23)
+# |  |  +---------- day of month (1 - 31)
+# |  |  |  +------- month (1 - 12)
+# |  |  |  |  +---- day of week (0 - 7) (Sunday=0 or 7)
+# |  |  |  |  |
+# *  *  *  *  *  command to be executed
+#--------------------------------------------------------------------------
+
+name: Information Retrieval
+
+on:
+  schedule:
+    - cron: '5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  acquire-and-push:
+    name: Collect hourly AQI and push status
+    runs-on: ubuntu-latest
+    env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Collect 60h weather forecast image
+      run: |
+        curl -s "https://old.meteo.pl/um/php/meteorogram_list.php?ntype=0u&fdate=2024052712&row=466&col=232&lang=pl&cname=Krak%F3w" \
+          | grep -ioP 'var fcstdate = "\K[0-9]+' > fcstdate.txt
+        wget "https://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&fdate=$(cat fcstdate.txt)&row=466&col=232&lang=pl" -O krakow/60
+        ./commit.sh
