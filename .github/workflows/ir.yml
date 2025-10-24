@@ -26,7 +26,7 @@ jobs:
 
     - name: Collect 60h weather forecast image
       run: |
-        curl -s "https://old.meteo.pl//um/ramka_um_city_pl.php" > ramka.html
+        curl -s --retry 0 "https://old.meteo.pl//um/ramka_um_city_pl.php" > ramka.html
         cat ramka.html | grep -oP '(?<=var UM_SYYYY=")[0-9]+' | tr -d '\n' > fcstdate.txt
         cat ramka.html | grep -oP '(?<=var UM_SMM=")[0-9]+' | tr -d '\n' >> fcstdate.txt
         cat ramka.html | grep -oP '(?<=var UM_SDD=")[0-9]+' | tr -d '\n' >> fcstdate.txt
