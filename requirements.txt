@@ -1,0 +1,5 @@
+numpy
+matplotlib
+more_itertools
+curl_cffi
+pydantic
