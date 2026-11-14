@@ -3,3 +3,5 @@ matplotlib
 more_itertools
 curl_cffi
 pydantic
+tenacity
+plac
