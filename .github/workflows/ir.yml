@@ -17,20 +17,31 @@ on:
 
 jobs:
   acquire-and-push:
-    name: Collect periodic weather forecast
+    name: Collect periodic weather forecast and render charts
     runs-on: ubuntu-latest
     env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - uses: actions/checkout@v3
 
+    - name: Install Arial font
+      run: |
+        echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | sudo debconf-set-selections
+        sudo apt-get update
+        sudo apt-get install -y ttf-mscorefonts-installer fontconfig
+        fc-cache -fv
+        rm -rf ~/.cache/matplotlib
+
+    - name: Generate Polish locale
+      run: |
+        sudo locale-gen pl_PL.UTF-8
+        sudo update-locale
+
+    - name: Install python libraries
+      run: |
+        pip install -r requirements.txt 
+
     - name: Collect 60h weather forecast image
       run: |
-        curl -s --retry 0 "https://old.meteo.pl//um/ramka_um_city_pl.php" > ramka.html
-        cat ramka.html | grep -oP '(?<=var UM_SYYYY=")[0-9]+' | tr -d '\n' > fcstdate.txt
-        cat ramka.html | grep -oP '(?<=var UM_SMM=")[0-9]+' | tr -d '\n' >> fcstdate.txt
-        cat ramka.html | grep -oP '(?<=var UM_SDD=")[0-9]+' | tr -d '\n' >> fcstdate.txt
-        cat ramka.html | grep -oP '(?<=var UM_SST=")[0-9]+' | tr -d '\n' >> fcstdate.txt
-        rm ramka.html
-        wget "https://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&fdate=$(cat fcstdate.txt)&row=466&col=232&lang=pl" -O krakow/60.png
+        python3 -m meteo.run 50.0225 19.8939 krakow/60.png
         ./commit.sh
