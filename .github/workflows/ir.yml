@@ -37,9 +37,14 @@ jobs:
         sudo locale-gen pl_PL.UTF-8
         sudo update-locale
 
-    - name: Install python libraries
-      run: |
-        pip install -rq requirements.txt 
+#    - name: Install python libraries
+#      run: |
+#        pip install -rq requirements.txt 
+
+    - name: Install Python dependencies
+      uses: py-actions/py-dependency-install@v4
+      with:
+        path: "requirements.txt"
 
     - name: Collect 60h weather forecast image
       run: |
