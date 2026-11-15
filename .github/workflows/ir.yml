@@ -39,7 +39,7 @@ jobs:
 
     - name: Install python libraries
       run: |
-        pip install -r requirements.txt 
+        pip install -rq requirements.txt 
 
     - name: Collect 60h weather forecast image
       run: |
