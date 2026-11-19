@@ -31,6 +31,7 @@ jobs:
     - name: Fetch latest available UTC timestamp
       id: available
       run: |
+        set -euo pipefail
         OUTPUT=$(python3 -m meteo.run available -L um4_60 | python3 -m meteo.run check_state state.json)
 
         if [ -n "$OUTPUT" ]; then
@@ -56,11 +57,18 @@ jobs:
         sudo locale-gen pl_PL.UTF-8
         sudo update-locale
 
-
     - name: Collect 60h weather forecast image
       if: steps.available.outputs.latest != ''
       env:
         TIMESTAMP: ${{ steps.available.outputs.latest }}
       run: |
-        python3 -m meteo.run 50.0225 19.8939 "${TIMESTAMP}" krakow/60.png
+        set -euo pipefail
+        TMP_STATE=$(mktemp)
+        if python3 -m meteo.run 50.0225 19.8939 "${TIMESTAMP}" krakow/60.png > "${TMP_STATE}"
+        then
+          mv "$TMP_STATE" output.json
+        else
+          rm -f "$TMP_STATE"
+          exit 1
+        fi
         ./commit.sh
