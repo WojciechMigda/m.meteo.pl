@@ -70,7 +70,7 @@ jobs:
       run: |
         set -euo pipefail
         TMP_STATE=$(mktemp)
-        if python3 -m meteo.run 50.0225 19.8939 "${TIMESTAMP}" krakow/60.png > "${TMP_STATE}"
+        if python3 -m meteo.run render 50.0225 19.8939 "${TIMESTAMP}" krakow/60.png > "${TMP_STATE}"
         then
           mv "$TMP_STATE" output.json
         else
