@@ -24,6 +24,12 @@ jobs:
     steps:
     - uses: actions/checkout@v7
 
+    - name: Set up Python with dependency caching
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
     - name: Install python libraries
       run: |
         pip install -q -r requirements.txt
