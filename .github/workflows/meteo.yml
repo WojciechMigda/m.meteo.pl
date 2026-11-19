@@ -1,0 +1,66 @@
+# Use the hash sign to prefix a comment
+# +---------------- minute (0 - 59)
+# |  +------------- hour (0 - 23)
+# |  |  +---------- day of month (1 - 31)
+# |  |  |  +------- month (1 - 12)
+# |  |  |  |  +---- day of week (0 - 7) (Sunday=0 or 7)
+# |  |  |  |  |
+# *  *  *  *  *  command to be executed
+#--------------------------------------------------------------------------
+
+name: meteo
+
+on:
+  schedule:
+    - cron: '*/20 0,1,2,6,7,8,12,13,14,18,19,20 * * *'
+  workflow_dispatch:
+
+jobs:
+  acquire-and-push:
+    name: Collect periodic weather forecast and render charts
+    runs-on: ubuntu-latest
+    env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Install python libraries
+      run: |
+        pip install -q -r requirements.txt
+
+    - name: Fetch latest available UTC timestamp
+      id: available
+      run: |
+        OUTPUT=$(python3 -m meteo.run available -L um4_60 | python3 -m meteo.run check_state state.json)
+
+        if [ -n "$OUTPUT" ]; then
+          {
+            echo 'latest<<EOF'
+            echo "$OUTPUT"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Install Arial font
+      if: steps.available.outputs.latest != ''
+      run: |
+        echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | sudo debconf-set-selections
+        echo "sudo apt-get update" # I don't need this
+        sudo apt-get install -y ttf-mscorefonts-installer fontconfig
+        fc-cache -fv
+        rm -rf ~/.cache/matplotlib
+
+    - name: Generate Polish locale
+      if: steps.available.outputs.latest != ''
+      run: |
+        sudo locale-gen pl_PL.UTF-8
+        sudo update-locale
+
+
+    - name: Collect 60h weather forecast image
+      if: steps.available.outputs.latest != ''
+      env:
+        TIMESTAMP: ${{ steps.available.outputs.latest }}
+      run: |
+        python3 -m meteo.run 50.0225 19.8939 "${TIMESTAMP}" krakow/60.png
+        ./commit.sh
