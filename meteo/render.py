@@ -29,6 +29,7 @@ FOOTER_FONT_SIZE = 9.0
 HEADER_FONT_SIZE = 8.5
 LEFT_MARGIN_FONT_SIZE = 8.5
 RIGHT_MARGIN_FONT_SIZE = 8.5
+RENDER_DT_FONT_SIZE = 7.0
 
 # Z: ground, dew, mid, wchill
 COLOR_TEMP_AIR_PT = "#ff0000"
@@ -65,6 +66,9 @@ COLOR_CLOUD_VLOW = '#3c3c3c'
 COLOR_CLOUD_LOW = '#5a5a5a'
 COLOR_CLOUD_MED = '#969696'
 COLOR_CLOUD_HIGH = '#ffffff'
+COLOR_VBAR_DAY = '#ffffff'
+COLOR_VBAR_NIGHT = '#e0e0e0'
+COLOR_RENDER_DT = '#e0e0e0'
 
 
 PCPT_TO_COLOR = {
@@ -289,7 +293,7 @@ def render_side_labels(axes):
         fontsize=RIGHT_MARGIN_FONT_SIZE, fontfamily=FONT_FAMILY, stretch=FONT_STRETCH, transform=ax.transAxes)
 
 
-def render_header_footer(fig, *, lat, lon, start_dt):
+def render_header_footer(fig, *, lat, lon, start_dt, tzname):
     sol_data = get_astral_sun(lat, lon, start_dt)
     sunrise: str = f'{sol_data["sunrise"].strftime("%H:%M %Z")}'
     sunset: str = f'{sol_data["sunset"].strftime("%H:%M %Z")}'
@@ -316,6 +320,9 @@ def render_header_footer(fig, *, lat, lon, start_dt):
     fig.text(20 / IMG_W, 7 / IMG_H, "meteo@icm.edu.pl",
         horizontalalignment='left',
         fontsize=FOOTER_FONT_SIZE, color=TEXT_NAVY, fontfamily=FONT_FAMILY, stretch=FONT_STRETCH,)
+    fig.text(0.375, 7 / IMG_H, datetime.datetime.now(zoneinfo.ZoneInfo(tzname)).strftime('%F %T'),
+        horizontalalignment='center',
+        fontsize=RENDER_DT_FONT_SIZE, color=COLOR_RENDER_DT, fontfamily=FONT_FAMILY, stretch=FONT_STRETCH,)
     fig.text(1 - 15 / IMG_W, 7 / IMG_H, f"© 2007-{datetime.datetime.now(datetime.UTC).year} ICM, Uniwersytet Warszawski",
         horizontalalignment='right',
         fontsize=FOOTER_FONT_SIZE, color=TEXT_NAVY, fontfamily=FONT_FAMILY, stretch=FONT_STRETCH,)
@@ -874,7 +881,7 @@ def render_day_night_bands(ax_top, ax_bottom, forecast):
         if x_start == x_end:
             continue
         #print(f'plot {x_start:.2f} - {x_end:.2f} | {int(is_night)}')
-        color = '#e0e0e0' if is_night else '#ffffff'
+        color = COLOR_VBAR_NIGHT if is_night else COLOR_VBAR_DAY
         rect = Rectangle(
             (x_start, y_bot_fig),
             width=(x_end - x_start),
@@ -902,7 +909,7 @@ def make_charts(forecast: MeteoForecastEnvelope, *, tzname='Europe/Warsaw', char
 
     lat = forecast.data.airtmp_point.point.lat
     lon = forecast.data.airtmp_point.point.lon
-    render_header_footer(fig, lat=lat, lon=lon, start_dt=start_dt)
+    render_header_footer(fig, lat=lat, lon=lon, start_dt=start_dt, tzname=tzname)
 
     axes = make_axes(fig)
     render_side_labels(axes)
