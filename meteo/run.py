@@ -128,7 +128,7 @@ class MeteoInterface():
             print(f'[!] Meteo forecast response error: {str(ex)}', file=sys.stderr)
             return os.EX_DATAERR
 
-        print(f'[i] Fetched forecast since {forecast.fstart}')
+        print(f'[i] Fetched forecast since {forecast.fstart}', file=sys.stderr)
 
         image: bytes = render.make_charts(forecast, tzname=tzname)
         print(f'[i] Rendered blob size: {len(image)}.', file=sys.stderr)
