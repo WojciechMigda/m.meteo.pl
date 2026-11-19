@@ -72,7 +72,7 @@ jobs:
         TMP_STATE=$(mktemp)
         if python3 -m meteo.run render 50.0225 19.8939 "${TIMESTAMP}" krakow/60.png > "${TMP_STATE}"
         then
-          mv "$TMP_STATE" output.json
+          mv "$TMP_STATE" state.json
         else
           rm -f "$TMP_STATE"
           exit 1
