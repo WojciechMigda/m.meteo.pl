@@ -145,6 +145,7 @@ class MeteoInterface():
 
     def check_state(
         self,
+        ignore_missing: ("Ignore missing state file.", "flag", "I"), # type: ignore
         state: ("Render state JSON file.", "positional", None, pathlib.Path) = "state.json", # type: ignore
     ) -> int:
         istr = sys.stdin.read().strip()
@@ -160,7 +161,7 @@ class MeteoInterface():
                 s = json.load(ifile)
         except IOError as ex:
             print(f'[!] Reading from {state} failed: {str(ex)}', file=sys.stderr)
-            return os.EX_IOERR
+            return os.EX_OK if ignore_missing else os.EX_IOERR
         except json.JSONDecodeError as ex:
             print(f'[!] JSON decoding of {state} failed: {str(ex)}', file=sys.stderr)
             return os.EX_DATAERR
