@@ -53,6 +53,7 @@ class ForecastDataContainer(pydantic.BaseModel):
     pcpttl_type_max: MeteoParameter
     pcpttlprob_point: MeteoParameter
     realhum_aver: MeteoParameter
+    storm_max: MeteoParameter
 
     # Panel 2: Ciśnienie
     trpres_point: MeteoParameter

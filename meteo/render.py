@@ -349,7 +349,7 @@ def style_panels(axes, forecast):
         ax.xaxis.set_major_locator(ticker.MultipleLocator(base=3, offset=2))
 
 
-def plot_circles(ax, *, x_ticks, y_data, radius, color, zorder):
+def plot_circles(ax, *, x_ticks, y_data, radius, color, zorder, edgecolor='none', lw=None):
     if np.size(x_ticks) == 0 or np.size(y_data) == 0:
         return
     from matplotlib.patches import Circle
@@ -362,7 +362,8 @@ def plot_circles(ax, *, x_ticks, y_data, radius, color, zorder):
     pc = PatchCollection(
         [marker],
         facecolor=color,
-        edgecolor='none',
+        edgecolor=edgecolor,
+        lw=lw,
         antialiased=True,
         offsets=coords,       # Pozycje punktów w jednostkach danych
         transOffset=ax.transData,  # Układ współrzędnych dla pozycji środków
@@ -406,15 +407,15 @@ def render_temperature_panel(ax_temp, forecast: MeteoForecastEnvelope):
     ax_temp.tick_params(axis='y', left=False, right=False)
 
 
-
-
 def render_precip_panel(ax_main, forecast: MeteoForecastEnvelope):
     x_ticks = np.arange(len(forecast.data.airtmp_point.data))
 
     ax_hum = ax_main.twinx()
     ax_pcp = ax_main.twinx()
+    ax_tstorm = ax_main.twinx()
 
-    ax_main.set_zorder(2)
+    ax_main.set_zorder(3)
+    ax_tstorm.set_zorder(2)
     ax_hum.set_zorder(1)
     ax_pcp.set_zorder(0)
 
@@ -477,6 +478,21 @@ def render_precip_panel(ax_main, forecast: MeteoForecastEnvelope):
         forecast.data.pcpttl_aver.data,
         color=pcpt_colors, width=1.0, edgecolor='none', align='center', zorder=-1)
     # TODO: burza, opad konwekcyjny
+    def s2c(p):
+        if p > 66.6:
+            return '#ff0000'
+        elif p > 33.3:
+            return '#ffa500'
+        elif p > 0:
+            return '#ffff00'
+        else:
+            return 'none'
+    ax_tstorm.tick_params(axis='y', left=False, right=False, labelleft=False, labelright=False)
+    ax_tstorm.grid(False)
+    ax_tstorm.set_ylim(0, 1)
+    plot_circles(ax=ax_tstorm, x_ticks=x_ticks, y_data=[0.5] * len(forecast.data.storm_max.data),
+        radius=2.5, lw=0.8, edgecolor=['black' if v > 0 else 'none' for v in forecast.data.storm_max.data],
+        color=[s2c(v) for v in forecast.data.storm_max.data], zorder=-1)
 
 
 def render_press_panel(ax_hpa, forecast: MeteoForecastEnvelope):
